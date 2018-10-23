@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Desktop\practica1_udp\udpclient.c">
+    <ClCompile Include="udpclient.c">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>

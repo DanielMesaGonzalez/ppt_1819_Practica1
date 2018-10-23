@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Desktop\drive-download-20181017T085523Z-001\cliente.c">
+    <ClCompile Include="cliente.c">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>
