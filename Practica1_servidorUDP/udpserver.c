@@ -20,7 +20,7 @@ int main(int *argc, char *argv[])
 	int input_l;
 	char buffer_in[2048], buffer_out[2048];
 	char command[9];
-	char user_input[1024];
+	char user_input[1024]= "";
 	int recibidos=0;
 	int enviados=0;
 	char iplocal[32]="10.82.241.165";  //OJOOOOO AQUI DEBEMOS DE PONER LA IP DONDE SE ALOJA EL SERVIDOR
@@ -72,7 +72,9 @@ int main(int *argc, char *argv[])
 					if(ntohs(input_in.sin_port)==UDP_CLIENT_PORT){// Se comprueba que el mensaje llegue desde el puerto típico para
 																  // este servicio, el 6001. Si no es así no se lleva a cabo ninguna
 																  // acción.
-						sscanf_s(buffer_in,"%s %d %[^\r]s\r\n",command,sizeof(command),&n_secuencia,user_input,sizeof(user_input));
+						//sscanf_s(buffer_in,"%s %d %s %[^\r]s\r\n",command,sizeof(command),&n_secuencia,user_input,sizeof(user_input));
+
+						gets_s(buffer_in, "%s %s %s %[^\r]s\r\n", command, sizeof(command), destinatario, sizeof(destinatario), remitente, sizeof(remitente), texto, sizeof(texto));
 
 						  /* if(strcmp(command,"ECHO")==0){// Si el mensaje no está bien formateado tampoco se responde para evitar
 													  // un gasto de recursos innecesario
@@ -82,7 +84,7 @@ int main(int *argc, char *argv[])
 						   }*/
 
 						   //-------------------------------------------------------------
-						    if (strcmp(command,"MENSAJE:")==0){  //Si le llega el comando mensaje, lee la cadena y envía una respuesta
+						    if (strcmp(command,"MENSAJE")==0){  //Si le llega el comando mensaje, lee la cadena y envía una respuesta
 							sscanf_s(user_input, "%s %s %s\r\n", remitente, sizeof(remitente), destinatario, sizeof(destinatario), texto, sizeof(texto));
 							sprintf_s(buffer_out,sizeof(buffer_out), "RESPUESTA %d %s %s\r\n",n_secuencia, remitente, texto); //Respuesta al cliente
 						   }
