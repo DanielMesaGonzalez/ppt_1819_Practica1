@@ -72,16 +72,7 @@ int main(int *argc, char *argv[])
 					if(ntohs(input_in.sin_port)==UDP_CLIENT_PORT){// Se comprueba que el mensaje llegue desde el puerto típico para
 																  // este servicio, el 6001. Si no es así no se lleva a cabo ninguna
 																  // acción.
-						//sscanf_s(buffer_in,"%s %d %s %[^\r]s\r\n",command,sizeof(command),&n_secuencia,user_input,sizeof(user_input));
-
-						gets_s(buffer_in, "%s %s %s %[^\r]s\r\n", command, sizeof(command), destinatario, sizeof(destinatario), remitente, sizeof(remitente), texto, sizeof(texto));
-
-						  /* if(strcmp(command,"ECHO")==0){// Si el mensaje no está bien formateado tampoco se responde para evitar
-													  // un gasto de recursos innecesario
-							sprintf_s(buffer_out,sizeof(buffer_out),"OK %d %s\r\n",n_secuencia,user_input);
-							
-							
-						   }*/
+						sscanf_s(buffer_in,"%s %d %s %[^\r]s\r\n",command,sizeof(command),&n_secuencia,user_input,sizeof(user_input));
 
 						   //-------------------------------------------------------------
 						    if (strcmp(command,"MENSAJE")==0){  //Si le llega el comando mensaje, lee la cadena y envía una respuesta

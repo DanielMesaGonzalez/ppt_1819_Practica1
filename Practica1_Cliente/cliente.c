@@ -63,7 +63,7 @@ do {
 	printf("CLIENTE> ¿Qué version de IP desea usar? 6 para IPv6, 4 para IPv4 [por defecto] ");
 	gets_s(ipdest, sizeof(ipdest));
 
-	if (strcmp(ipdest, "6") == 0) {
+	if (strcmp(ipdest, "6") == 0) {       //En caso de usar IP6
 		ipversion = AF_INET6;
 
 	}
@@ -113,22 +113,22 @@ do {
 			//Inicio de la máquina de estados
 			do {
 				switch (estado) {
-				case S_HELO:
+				case S_HELO: //COMANDO DE APLICACIÓN (Se encarga de mostrar el mensaje de bienvenida)
 					// Se recibe el mensaje de bienvenida
 					break;
-				case S_USER:
+				case S_USER:  //COMANDO DE APLICACIÓn (se encarga de enviar al servidor un nombre de usuario para autentificación)
 					// establece la conexion de aplicacion 
 					printf("CLIENTE> Introduzca el usuario (enter para salir): ");
 					gets_s(input, sizeof(input));
 					if (strlen(input) == 0) {
-						sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
-						estado = S_QUIT;
+						sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);    //COMANDO SD (finaliza la conexión)
+						estado = S_QUIT;   //COMANDO APLICACIÓN (finaliza la conexión con el cliente)
 					}
 					else
 
-						sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", SC, input, CRLF);
+						sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", SC, input, CRLF);   //COMANDO SC (solicitud de conexión)
 					break;
-				case S_PASS:
+				case S_PASS:  //COMANDO DE APLICACIÓN (se encarga de enviar al servidor una clave de usuario para autentificación)
 					printf("CLIENTE> Introduzca la clave (enter para salir): ");
 					gets_s(input, sizeof(input));
 					if (strlen(input) == 0) {
@@ -136,10 +136,10 @@ do {
 						estado = S_QUIT;
 					}
 					else
-						sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", PW, input, CRLF);
+						sprintf_s(buffer_out, sizeof(buffer_out), "%s %s%s", PW, input, CRLF);   //COMANDO PW (solicitud de password del usuario)
 					break;
 
-				case S_DATA:
+				case S_DATA:   //COMANDO APLICACIÓN (se encarga de enviar al servidor todos los datos del cliente)
 
 					    printf("Introduce el primer numero (cuatro cifras): ");
 						gets_s(numero1, sizeof(numero1));
