@@ -160,6 +160,18 @@ int main(int *argc, char *argv[])
 			recibidos = recv(nuevosockfd,buffer_in,1023,0);    //SOCKET recibe datos del cliente
 
 			//DEBEMOS COMPROBAR LOS ERRORES AQUI PARA QUE NO DE LA EXCEPCION
+			
+			//--------------------------------------------------------------
+			/*int salida;
+			if (recibidos == -1 || recibidos == 0){
+				printf("Error en la lectura de datos (recibidos)");
+				estado = S_QUIT;
+			}
+			else {
+				estado = S_HELO;
+			}*/
+
+			//--------------------------------------------------------------
 
 			buffer_in[recibidos] = 0x00;// Dado que los datos recibidos se tratan como cadenas
 										// se debe introducir el carácter 0x00 para finalizarla

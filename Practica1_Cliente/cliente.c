@@ -87,21 +87,23 @@ do {
 		if (strcmp(ipdest, "") == 0 && ipversion == AF_INET6)
 			strcpy(ipdest, default_ip6);
 
+
+		//DIFERENCIA IP4 respecto IP6
 		if (ipversion == AF_INET) {
 			server_in4.sin_family = AF_INET;
 			server_in4.sin_port = htons(TCP_SERVICE_PORT);
 			//server_in4.sin_addr.s_addr=inet_addr(ipdest);
-			inet_pton(ipversion, ipdest, &server_in4.sin_addr.s_addr);
-			server_in = (struct sockaddr*)&server_in4;
+			inet_pton(ipversion, ipdest, &server_in4.sin_addr.s_addr); //no se usa en ip6
+			server_in = (struct sockaddr*)&server_in4; //en ip4 es server_ip4
 			address_size = sizeof(server_in4);
 		}
-
+		//DIFERENCIA IP6 respecto IP4
 		if (ipversion == AF_INET6) {
 			memset(&server_in6, 0, sizeof(server_in6));
-			server_in6.sin6_family = AF_INET6;
+			server_in6.sin6_family = AF_INET6;  //en ip6 AF_INET6 es especifico para la ip6
 			server_in6.sin6_port = htons(TCP_SERVICE_PORT);
 			inet_pton(ipversion, ipdest, &server_in6.sin6_addr);
-			server_in = (struct sockaddr*)&server_in6;
+			server_in = (struct sockaddr*)&server_in6; //en ip6 es server_ip6
 			address_size = sizeof(server_in6);
 		}
 
