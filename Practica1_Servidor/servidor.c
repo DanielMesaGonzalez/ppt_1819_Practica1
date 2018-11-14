@@ -120,13 +120,13 @@ int main(int *argc, char *argv[])
 	
 	
 
-	do{
-		printf ("SERVIDOR> ESPERANDO NUEVA CONEXION DE TRANSPORTE\r\n");
+	do {
+		printf("SERVIDOR> ESPERANDO NUEVA CONEXION DE TRANSPORTE\r\n");
 		tamanio = address_size;
 		remote_addr = malloc(tamanio);
 
-		nuevosockfd=accept(sockfd,(struct sockaddr*)remote_addr,&tamanio);  //SOCKET espera solicitud de conexión
-		if(nuevosockfd==INVALID_SOCKET){   //SOCKET comprueba errores
+		nuevosockfd = accept(sockfd, (struct sockaddr*)remote_addr, &tamanio);  //SOCKET espera solicitud de conexión
+		if (nuevosockfd == INVALID_SOCKET) {   //SOCKET comprueba errores
 			DWORD error = GetLastError();
 			printf("Error %d\r\n", error);
 			return (-4);
@@ -134,153 +134,152 @@ int main(int *argc, char *argv[])
 
 		if (ipversion == AF_INET6) {
 			struct sockaddr_in6  *temp = (struct sockaddr_in6 *)remote_addr;
-			inet_ntop(AF_INET6,temp, remoteaddress, sizeof(remoteaddress));
+			inet_ntop(AF_INET6, temp, remoteaddress, sizeof(remoteaddress));
 			remoteport = ntohs(temp->sin6_port);
 		}
 		else {
 			struct sockaddr_in  *temp = (struct sockaddr_in *)remote_addr;
-			inet_ntop(AF_INET,temp, remoteaddress, sizeof(remoteaddress));
+			inet_ntop(AF_INET, temp, remoteaddress, sizeof(remoteaddress));
 			remoteport = ntohs(temp->sin_port);
 		}
 
-		printf ("SERVIDOR> CLIENTE CONECTADO DESDE %s:%u\r\n",remoteaddress,remoteport);
+		printf("SERVIDOR> CLIENTE CONECTADO DESDE %s:%u\r\n", remoteaddress, remoteport);
 
 		//Mensaje de Bienvenida
-		sprintf_s (buffer_out, sizeof(buffer_out), "%s Bienvenido al servidor Sencillo%s",OK,CRLF);
-		
-		enviados=send(nuevosockfd,buffer_out,(int)strlen(buffer_out),0);  //SOCKET envia datos al cliente
- 
+		sprintf_s(buffer_out, sizeof(buffer_out), "%s Bienvenido al servidor Sencillo%s", OK, CRLF);
+
+		enviados = send(nuevosockfd, buffer_out, (int)strlen(buffer_out), 0);  //SOCKET envia datos al cliente
+
 		//Se reestablece el estado inicial
 		estado = S_USER;
 		fin_conexion = 0;
 
-		printf ("SERVIDOR> Esperando conexion de aplicacion\r\n");
-		do{
+		printf("SERVIDOR> Esperando conexion de aplicacion\r\n");
+		do {
 			//Se espera un comando del cliente
-			recibidos = recv(nuevosockfd,buffer_in,1023,0);    //SOCKET recibe datos del cliente
+			recibidos = recv(nuevosockfd, buffer_in, 1023, 0);    //SOCKET recibe datos del cliente
 
-			//DEBEMOS COMPROBAR LOS ERRORES AQUI PARA QUE NO DE LA EXCEPCION
-			
-			//--------------------------------------------------------------
-			/*int salida;
-			if (recibidos == -1 || recibidos == 0){
-				printf("Error en la lectura de datos (recibidos)");
-				estado = S_QUIT;
+			//DEBEMOS COMPROBAR LOS ERRORES AQUÍ PARA QUE NO DE LA EXCEPCION
+			if (recibidos == -1) {
+				printf("SERVIDOR> CONEXION CON EL CLIENTE PERDIDA\r\n");
+				sprintf_s(buffer_out, sizeof(buffer_out), "%s Pérdida de conexión con el Cliente%s", ERORR, CRLF);
+				fin_conexion = 1;
 			}
 			else {
-				estado = S_HELO;
-			}*/
+				//Aqui anidamos hasta el fin de la maquina de estados
 
-			//--------------------------------------------------------------
+				buffer_in[recibidos] = 0x00;// Dado que los datos recibidos se tratan como cadenas
+											// se debe introducir el carácter 0x00 para finalizarla
+											// ya que es así como se representan las cadenas de caracteres
+											// en el lenguaje C
 
-			buffer_in[recibidos] = 0x00;// Dado que los datos recibidos se tratan como cadenas
-										// se debe introducir el carácter 0x00 para finalizarla
-										// ya que es así como se representan las cadenas de caracteres
-										// en el lenguaje C
+				printf("SERVIDOR RECIBIDO [%d bytes]>%s\r\n", recibidos, buffer_in);
 
-			printf ("SERVIDOR RECIBIDO [%d bytes]>%s\r\n", recibidos, buffer_in);
-			
-			//SE analiza el formato de la PDU de aplicación (APDU)
-			strncpy_s ( cmd, sizeof(cmd),buffer_in, 4);
-			cmd[4]=0x00; // Se finaliza la cadena
-			printf ("SERVIDOR COMANDO RECIBIDO>%s\r\n",cmd);
+				//SE analiza el formato de la PDU de aplicación (APDU)
+				strncpy_s(cmd, sizeof(cmd), buffer_in, 4);
+				cmd[4] = 0x00; // Se finaliza la cadena
+				printf("SERVIDOR COMANDO RECIBIDO>%s\r\n", cmd);
 
-			//Máquina de estados del servidor para seguir el protocolo
-			//En función del estado en el que se encuentre habrá unos comandos permitidos
-			switch (estado){
+				//Máquina de estados del servidor para seguir el protocolo
+				//En función del estado en el que se encuentre habrá unos comandos permitidos
+				switch (estado) {
 				case S_USER:
-					if ( strcmp(cmd,SC)==0 ){ // si recibido es solicitud de conexion de aplicacion
-					
-						sscanf_s (buffer_in,"USER %s\r\n",usr,sizeof(usr));
-						
+					if (strcmp(cmd, SC) == 0) { // si recibido es solicitud de conexion de aplicacion
+
+						sscanf_s(buffer_in, "USER %s\r\n", usr, sizeof(usr));
+
 						// envia OK acepta todos los usuarios hasta que tenga la clave
-						sprintf_s (buffer_out, sizeof(buffer_out), "%s%s", OK,CRLF);
-						
+						sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", OK, CRLF);
+
 						estado = S_PASS;
-						printf ("SERVIDOR> Esperando clave\r\n");
-					} else
-					if ( strcmp(cmd,SD)==0 ){
-						sprintf_s (buffer_out, sizeof(buffer_out), "%s Fin de la conexión%s", OK,CRLF);
-						fin_conexion=1;
+						printf("SERVIDOR> Esperando clave\r\n");
 					}
-					else{
-						sprintf_s (buffer_out, sizeof(buffer_out), "%s Comando incorrecto%s",ERORR,CRLF);
-					}
-				break;
+					else
+						if (strcmp(cmd, SD) == 0) {
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s Fin de la conexión%s", OK, CRLF);
+							fin_conexion = 1;
+						}
+						else {
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s Comando incorrecto%s", ERORR, CRLF);
+						}
+					break;
 
 				case S_PASS:
-					if ( strcmp(cmd,PW)==0 ){ // si comando recibido es password
-					
-						sscanf_s (buffer_in,"PASS %s\r\n",pas,sizeof(usr));
+					if (strcmp(cmd, PW) == 0) { // si comando recibido es password
 
-						if ( (strcmp(usr,USER)==0) && (strcmp(pas,PASSWORD)==0) ){ // si password recibido es correcto
-						
+						sscanf_s(buffer_in, "PASS %s\r\n", pas, sizeof(usr));
+
+						if ((strcmp(usr, USER) == 0) && (strcmp(pas, PASSWORD) == 0)) { // si password recibido es correcto
+
 							// envia aceptacion de la conexion de aplicacion, nombre de usuario y
 							// la direccion IP desde donde se ha conectado
-							sprintf_s (buffer_out, sizeof(buffer_out), "%s %s IP(%s)%s", OK, usr, remoteaddress,CRLF);
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s %s IP(%s)%s", OK, usr, remoteaddress, CRLF);
 							estado = S_DATA;
-							printf ("SERVIDOR> Esperando comando\r\n");
+							printf("SERVIDOR> Esperando comando\r\n");
 						}
-						else{
-							sprintf_s (buffer_out, sizeof(buffer_out), "%s Autenticación errónea%s",ERORR,CRLF);
+						else {
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s Autenticación errónea%s", ERORR, CRLF);
 						}
-					} else	if ( strcmp(cmd,SD)==0 ){
-						sprintf_s (buffer_out, sizeof(buffer_out), "%s Fin de la conexión%s", OK,CRLF);
-						fin_conexion=1;
 					}
-					else{
-						sprintf_s (buffer_out, sizeof(buffer_out), "%s Comando incorrecto%s",ERORR,CRLF);
+					else	if (strcmp(cmd, SD) == 0) {
+						sprintf_s(buffer_out, sizeof(buffer_out), "%s Fin de la conexión%s", OK, CRLF);
+						fin_conexion = 1;
 					}
-				break;
+					else {
+						sprintf_s(buffer_out, sizeof(buffer_out), "%s Comando incorrecto%s", ERORR, CRLF);
+					}
+					break;
 
-				case S_DATA: /***********************************************************/				
+				case S_DATA: /***********************************************************/
 					buffer_in[recibidos] = 0x00;
 					strncpy_s(cmd, sizeof(cmd), buffer_in, 4);
-					
-					if ( strcmp(cmd,SD)==0 ){
-						sprintf_s (buffer_out, sizeof(buffer_out), "%s Fin de la conexión%s", OK,CRLF);
-						fin_conexion=1;
-					}
-					else if (strcmp(cmd,SD2)==0){
-						sprintf_s (buffer_out, sizeof(buffer_out), "%s Finalizando servidor%s", OK,CRLF);
-						fin_conexion=1;
-						fin=1;
-					}
-					// ---------------------------------
-					else if (strcmp(cmd, "SUM ") == 0) {
+
+					// ----------------- Realizamos la lectura de los números y los sumamos
+					if (strcmp(cmd, "SUM ") == 0) {
 						sscanf_s(buffer_in, "SUM %d %d%s", &numero1, &numero2, CRLF);
-						if (numero1 < 10000 && numero2 < 10000) {
+						if ((numero1 < 10000 && numero1 > 0) && (numero2 < 1000 && numero2 > 0)) {
 							total = numero1 + numero2;
 							printf("Suma= %d\r\n", total);
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s%d%s%s", OK, SP, total, SP, CRLF);
 						}
+						else if (numero1 <= 0 || numero2 <= 0) {
+							sprintf_s(buffer_out, sizeof(buffer_out), "Error en la introducción de numero, cerrando %", CRLF);
+							fin_conexion = 1;
+							estado = S_QUIT;
+						}
 						//---------------------
 						else {
-							sprintf_s(buffer_out, sizeof(buffer_out), "%s Comando incorrecto: %s", ERORR, CRLF);
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s Operación fallida: %s", ERORR, CRLF);
 						}
 					}
 					break;
-
+					//--------------------- Definimos el estado S_QUIT	
+				case S_QUIT:
+					fin = 1;
+					break;
+					//-----------------------
 				default:
 					break;
-					
-			} // switch
 
-			enviados=send(nuevosockfd,buffer_out,(int)strlen(buffer_out),0);
-			//--------------------------------------------------------------
-			if (enviados <= 0) {
-				if (enviados < 0) {
-					DWORD error = GetLastError();
-					printf("Error al enviar datos");
-					fin_conexion = 1;
-				}
-				else {
-					fin_conexion = 1;
-				}
-			}
-			//--------------------------------------------------------------
+				} // switch
 
-		} while (!fin_conexion);
+				enviados = send(nuevosockfd, buffer_out, (int)strlen(buffer_out), 0);
+				//--------------------------------------------------------------
+				if (enviados <= 0) {
+					if (enviados < 0) {
+						DWORD error = GetLastError();
+						printf("Error al enviar datos");
+						fin_conexion = 1;
+					}
+					else {
+						fin_conexion = 1;
+					}
+				}
+				//--------------------------------------------------------------
+
+			}                 //fin del while (maquina de estados)
+		} //Aqui finalizamos el else para solucionar la excepcion
+		while (!fin_conexion);
 		printf ("SERVIDOR> CERRANDO CONEXION DE TRANSPORTE\r\n");
 		shutdown(nuevosockfd,SD_SEND);
 		closesocket(nuevosockfd);

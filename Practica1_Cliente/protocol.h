@@ -7,7 +7,7 @@
 #define PW "PASS"  // Password del usuario  PASS password
 
 #define SD  "QUIT"  // Finalizacion de la conexion de aplicacion
-#define SD2 "EXIT"  // Finalizacion de la conexion de aplicacion 
+#define EXI "EXIT"  // Finalizacion de la conexion de aplicacion 
 #define ECHO "ECHO" // Definicion del comando "ECHO" para el servicio de eco
 
 

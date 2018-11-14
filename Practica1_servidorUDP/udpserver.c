@@ -2,6 +2,16 @@
 #include <ws2tcpip.h>
 #include <time.h>
 
+//******************************************************
+//EXPLICACIÓN APARTADO 10
+//El servidor realiza un servicio de respuesta mediante mensajes al cliente como si fuese un eco
+//Los comandos de aplicación que se usan entre cliente y servidor es el comando MENSAJE
+
+
+
+
+
+
 
 #define UDP_CLIENT_PORT	60001//Puerto del que deben venir los mensajes
 #define UDP_SERVER_PORT	60000//Puerto en el que el servidor recibirá peticiones

@@ -18,6 +18,7 @@ Autores:
 #include <stdio.h>
 #include <ws2tcpip.h>//Necesaria para las funciones IPv6
 #include <conio.h>
+#include <stdlib.h>
 #include "protocol.h"
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -37,8 +38,8 @@ int main(int *argc, char *argv[])
 	char ipdest[256];
 	char default_ip4[16] = "127.0.0.1";
 	char default_ip6[64] = "::1";
-	char numero1[20]=" ", numero2[20]=" ";
-
+	char Charnumero1[20]=" ", Charnumero2[20]=" ";
+	int numero1 = 0, numero2 = 0;
 	WORD wVersionRequested;
 	WSADATA wsaData;
 	int err;
@@ -144,13 +145,22 @@ do {
 				case S_DATA:   //COMANDO APLICACIÓN (se encarga de enviar al servidor todos los datos del cliente)
 
 					    printf("Introduce el primer numero (cuatro cifras): ");
-						gets_s(numero1, sizeof(numero1));
-						
+						gets_s(Charnumero1,sizeof(Charnumero1));
+						numero1 = atoi(Charnumero1);
+
 						printf("Introduce el segundo numero (cuatro cifras): ");
-						gets(numero2, sizeof(numero2));
+						gets_s(Charnumero2,sizeof(Charnumero2));
+						numero2 = atoi(Charnumero2);
 						
-						sprintf_s(buffer_out, sizeof(buffer_out), "%s%s%s%s%s%s", SUM, SP, numero1, SP, numero2, CRLF);
-						printf_s(buffer_out, sizeof(buffer_out), "%s %s%s", ECHO, input, CRLF);
+		                if((numero1<0 && numero1<10000) && (numero2 <0 && numero2<10000) ) {
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", ERORR, CRLF); //Envío el error al servidor
+							estado = S_QUIT;
+		                }
+						//----------------------
+						else{
+							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s%i%s%i%s", SUM, SP, numero1, SP, numero2, CRLF);
+							printf_s(buffer_out, sizeof(buffer_out), "%s %s%s", ECHO, input, CRLF);
+						}
 				
 					break;
 				}
@@ -188,7 +198,7 @@ do {
 
 								if (strlen(input) == 0) {
 						     	sprintf_s(buffer_out, sizeof(buffer_out), "%s%s", SD, CRLF);
-										estado= S_QUIT;   //DEBEMOS USAR EL SEND PARA ENVIAR AL SERVIDOR
+										estado= S_QUIT;   
 									}
 
 								 else {
