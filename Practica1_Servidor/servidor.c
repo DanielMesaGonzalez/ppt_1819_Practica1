@@ -242,17 +242,16 @@ int main(int *argc, char *argv[])
 							printf("Suma= %d\r\n", total);
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s%s%d%s%s", OK, SP, total, SP, CRLF);
 						}
-						else if (numero1 <= 0 || numero2 <= 0) {
-							sprintf_s(buffer_out, sizeof(buffer_out), "Error en la introducción de numero, cerrando %", CRLF);
-							fin_conexion = 1;
-							estado = S_QUIT;
+						else {
+							sprintf_s(buffer_out, sizeof(buffer_out), "Error%s", CRLF);
 						}
-						//---------------------
+					}//---------------------
 						else {
 							sprintf_s(buffer_out, sizeof(buffer_out), "%s Operación fallida: %s", ERORR, CRLF);
 						}
-					}
+					
 					break;
+
 					//--------------------- Definimos el estado S_QUIT	
 				case S_QUIT:
 					fin = 1;

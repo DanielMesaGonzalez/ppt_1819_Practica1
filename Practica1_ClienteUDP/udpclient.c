@@ -4,8 +4,8 @@
 
 #pragma comment(lib, "Ws2_32.lib")//Busca la biblioteca Ws2_32.lib
 
-#define UDP_CLIENT_PORT	60001
-#define UDP_SERVER_PORT	60000
+#define UDP_CLIENT_PORT	60001     //Este puerto será el contrario en el otro cliente
+#define UDP_SERVER_PORT	60000     // Igual  con este puerto
 
 int main(int *argc, char *argv[]){
 	// Variables de incialización de los Windows Sockets
@@ -21,9 +21,10 @@ int main(int *argc, char *argv[]){
 	char user_input[1024];
 	int recibidos=0;
 	int enviados=0;
-	char iplocal[32]="192.168.66.253";
-    char ipdest[32]="127.0.0.1";
+	char iplocal[32]= "192.168.0.18";
+    char ipdest[32]="192.168.0.18";
 	int n_secuencia=1;
+	int r_secuencia=1; 
 	int err=0;
 	char cadtemp[32];
 	
@@ -38,7 +39,7 @@ int main(int *argc, char *argv[]){
 		return(0);
 	}// Fin Inicialización Windows Sockets
 
-	sockfd=socket(PF_INET,SOCK_DGRAM,0);
+	sockfd=socket(PF_INET,SOCK_DGRAM,0); // SOCKET crea el socket
 	if(sockfd==INVALID_SOCKET){
 		printf("CLIENTE UDP> Error\r\n");
 	}else{
@@ -55,7 +56,7 @@ int main(int *argc, char *argv[]){
 		inet_pton(AF_INET, iplocal,&client_in.sin_addr.s_addr);
 
 
-		if(bind(sockfd,(struct sockaddr *)&client_in,sizeof(client_in))==SOCKET_ERROR){
+		if(bind(sockfd,(struct sockaddr *)&client_in,sizeof(client_in))==SOCKET_ERROR){  //SOCKEY le asocia una direccion local al socket
 			printf("CLIENTE UDP> Error %d\r\n",GetLastError());
 		
 		}else{
@@ -75,39 +76,43 @@ int main(int *argc, char *argv[]){
 
 			do{// Se estarán enviando mensajes de eco hasta que se pulse solo un enter
 				
-				printf("CLIENTE UDP> Introduzca una cadena para enviar al servidor: ");
+				printf("CLIENTE UDP> Introduzca una cadena para enviar: ");
 				gets_s(user_input,sizeof(user_input));
 				sprintf_s(buffer_out,sizeof(buffer_out),"ECHO %d %s\r\n",n_secuencia,user_input);
 
-				enviados=sendto(sockfd,buffer_out,(int)strlen(buffer_out),0,(struct sockaddr *)&server_in,sizeof(server_in));
+				enviados=sendto(sockfd,buffer_out,(int)strlen(buffer_out),0,(struct sockaddr *)&server_in,sizeof(server_in)); //SOCKET envía los mensajes
 				if(enviados!=SOCKET_ERROR){
 					printf("CLIENTE UDP> Enviados %d bytes\r\n",enviados);					
 					in_len=sizeof(buffer_in);
 					input_l=sizeof(input_in);
 
-					recibidos=recvfrom(sockfd,buffer_in,in_len,0,(struct sockaddr *)&input_in,&input_l);
+					recibidos=recvfrom(sockfd,buffer_in,in_len,0,(struct sockaddr *)&input_in,&input_l); //SOCKET recibe los mensajes
 					if(recibidos!=SOCKET_ERROR){
-						char peer[32]="";
-						int r_secuencia=0;
+						char peer[32] = "";
 						char eco[1024] ="";
 						buffer_in[recibidos]=0;
 						
 						inet_ntop(AF_INET, &input_in.sin_addr, peer, sizeof(peer));
 						
-						printf("CLIENTE UDP> Recibidos %d bytes de %s %d\r\n",recibidos,peer/*inet_ntoa(input_in.sin_addr)*/,ntohs(input_in.sin_port));
+						printf("CLIENTE UDP> Recibidos %d bytes de %s %d\r\n",recibidos,peer/*inet_ntoa(input_in.sin_addr)*/,ntohs(input_in.sin_port),buffer_in); //Añadimos el buffer_in para leer el mensaje
 						sscanf_s(buffer_in,"OK %d %[^\r]s\r\n",&r_secuencia,eco,sizeof(eco));
-						if(r_secuencia==n_secuencia && strlen(eco)>0){
-							printf("CLIENTE UDP> Eco recibido: %s\r\n",eco);
+						if(r_secuencia==n_secuencia && strlen(buffer_in)>0){
+							printf("CLIENTE UDP> Mensaje recibido: %s\r\n",buffer_in);  //Mostramos el mensaje que nos llega del servidor
+							n_secuencia++;
+							r_secuencia = n_secuencia;
 						}else{
+
 							printf("CLIENTE UDP> Error en la respuesta");
 						}
 
 					}
-					n_secuencia++;
+				//	n_secuencia++;
+					
+					
 				}
 			}while(strcmp("",user_input)!=0);
 		}
-		closesocket(sockfd);
+		closesocket(sockfd);   //SOCKET cierra el socket
 	}//fin sockfd==INVALID_SOCKET
 	
 	WSACleanup();// solo Windows
